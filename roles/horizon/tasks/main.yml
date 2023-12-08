@@ -1,0 +1,47 @@
+# Horizon
+
+- name: Copy Horizon configuration
+  copy:
+    dest: /etc/openstack-dashboard/local_settings.py
+    content: |
+      OPENSTACK_HOST = "controller"
+      ALLOWED_HOSTS = ['*']
+      SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+      CACHES = {'default': {'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache', 'LOCATION': 'controller:11211'}}
+      OPENSTACK_KEYSTONE_URL = "http://%s/identity/v3" % OPENSTACK_HOST
+      OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT = True
+      OPENSTACK_API_VERSIONS = {"identity": 3, "image": 2, "volume": 3}
+      OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = "Default"
+      OPENSTACK_KEYSTONE_DEFAULT_ROLE = "user"
+      OPENSTACK_NEUTRON_NETWORK = {'enable_router': False, 'enable_quotas': False, 'enable_ipv6': False, 'enable_distributed_router': False, 'enable_ha_router': False, 'enable_fip_topology_check': False}
+      CACHES = {'default': {'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache', 'LOCATION': '192.168.56.137:11211'}}
+      SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+      OPENSTACK_HOST = "192.168.56.124"
+      OPENSTACK_KEYSTONE_URL = "http://%s/identity/v3" % OPENSTACK_HOST
+      OPENSTACK_KEYSTONE_URL = "http://192.168.56.137:5000/v3"
+      TIME_ZONE = "Asia/Tokyo"
+      OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT = True
+      OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = 'Default'
+      OPENSTACK_API_VERSIONS = {"identity": 3, "volume": 3, "compute": 2}
+      WSGIApplicationGroup %{GLOBAL}
+
+- name: Install Apache2
+  apt:
+    name: apache2
+
+- name: Start Apache2 service
+  systemd:
+    name: apache2
+    state: started
+
+- name: Reload Apache2 service
+  systemd:
+    name: apache2
+    state: reloaded
+
+- name: Verify Apache2 service
+  shell: systemctl status apache2.service
+  register: apache2_service
+
+- debug:
+    msg: "{{ apache2_service }}"
